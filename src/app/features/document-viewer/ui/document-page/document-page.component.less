@@ -1,0 +1,74 @@
+.page {
+    position: relative;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    cursor: crosshair;
+    outline: none;
+    user-select: none;
+
+    &:focus {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        user-select: none;
+        pointer-events: none;
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        user-drag: none;
+    }
+}
+
+// Общий класс для интерактивных элементов
+.interactive-element {
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.annotation-highlight-rectangle {
+    position: absolute;
+    border: 2px solid #ffc107;
+    background: rgba(255, 193, 7, 0.2);
+    pointer-events: auto;
+    z-index: 5;
+    border-radius: 4px;
+
+    &:hover {
+        background: rgba(255, 193, 7, 0.4);
+        border-color: #ff9800;
+    }
+
+    &:focus {
+        background: rgba(255, 193, 7, 0.4);
+        border-color: #ff9800;
+    }
+
+    &.saved {
+        border-color: #28a745;
+        background: rgba(40, 167, 69, 0.2);
+
+        &:hover {
+            background: rgba(40, 167, 69, 0.4);
+            border-color: #218838;
+        }
+
+        &:focus {
+            background: rgba(40, 167, 69, 0.4);
+            border-color: #218838;
+        }
+    }
+}
+
+.selection-rectangle {
+    position: absolute;
+    border: 2px solid #ffc107;
+    background: rgba(255, 193, 7, 0.3);
+    pointer-events: none;
+    z-index: 15;
+    border-radius: 4px;
+}

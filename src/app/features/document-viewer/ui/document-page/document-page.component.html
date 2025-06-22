@@ -1,0 +1,38 @@
+<div
+    class="page"
+    [attr.data-page]="page().number"
+    appAreaSelection
+    [pageNumber]="page().number"
+    [disabled]="hasUnsavedAnnotation()"
+    (selectionChange)="onSelectionChange($event)"
+    (selectionEnd)="onSelectionEnd($event)"
+    tabindex="0"
+    role="button">
+    <img [src]="page().imageUrl" [alt]="'Page ' + page().number" />
+
+    @for (annotation of getAnnotationsForPage(); track annotation.id) {
+        @if (isAnnotationVisible(annotation.id)()) {
+            <app-annotation
+                [annotation]="annotation"
+                (positionChange)="updateAnnotationPosition.emit($event)"
+                (textChange)="updateAnnotationText.emit($event)"
+                (delete)="deleteAnnotation.emit(annotation.id)">
+            </app-annotation>
+        }
+    }
+
+    @for (highlight of getSavedHighlightsForPage(); track highlight.id) {
+        <div
+            class="annotation-highlight-rectangle interactive-element"
+            [class.saved]="highlight.isSaved"
+            [ngStyle]="getHighlightStyles(highlight)"
+            (click)="onHighlightInteraction($event, highlight.id)"
+            (keydown.enter)="onHighlightInteraction($event, highlight.id)"
+            tabindex="0"
+            role="button"></div>
+    }
+
+    @if (currentSelection() && currentSelection()!.pageNumber === page().number) {
+        <div class="selection-rectangle" [ngStyle]="getSelectionStyles()"></div>
+    }
+</div>

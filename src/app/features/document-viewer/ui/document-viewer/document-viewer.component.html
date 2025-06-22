@@ -1,10 +1,16 @@
 <div class="document-container">
-  <div class="pages" [style.transform]="'scale(' + zoom() + ')'">
-    @for (page of state.document()?.pages; track page.number) {
-      <div class="page">
-        <img [src]="page.imageUrl" [alt]="'Page ' + page.number" />
-        <app-annotation></app-annotation>
-      </div>
-    }
-  </div>
+    <div class="pages" [style.transform]="'scale(' + zoom() + ')'">
+        @for (page of state.document()?.pages; track page.number) {
+            <app-document-page
+                [page]="page"
+                [currentSelection]="currentSelection()"
+                (updateAnnotationPosition)="updateAnnotationPosition($event)"
+                (updateAnnotationText)="updateAnnotationText($event)"
+                (deleteAnnotation)="deleteAnnotation($event)"
+                (highlightClick)="onHighlightClick($event)"
+                (selectionChange)="onSelectionChange($event)"
+                (selectionEnd)="onSelectionEnd($event)">
+            </app-document-page>
+        }
+    </div>
 </div>

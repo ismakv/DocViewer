@@ -1,26 +1,53 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DocumentService } from '@features/document-viewer/service/document.service';
-import { DocumentStateService } from '@features/document-viewer/service/document-state.service';
-import { AnnotationComponent } from '../annotation/annotation.component';
+import { DocumentPageComponent } from '../document-page/document-page.component';
+import { DocumentService } from '../../service/document.service';
+import { DocumentStateService } from '../../service/document-state.service';
+import { AnnotationService } from '../../service/annotation.service';
+import { SelectionArea } from '../directives/area-selection.directive';
+import { AnnotationPositionChangeEvent, AnnotationTextChangeEvent } from '../../model/document-page-events.interface';
 
 @Component({
     selector: 'app-document-viewer',
-    imports: [CommonModule, AnnotationComponent],
+    imports: [CommonModule, DocumentPageComponent],
     templateUrl: './document-viewer.component.html',
     styleUrl: './document-viewer.component.less',
 })
 export class DocumentViewerComponent {
     zoom = input.required<number>();
 
-    private documentService = inject(DocumentService);
-    public state = inject(DocumentStateService);
+    protected documentService = inject(DocumentService);
+    protected state = inject(DocumentStateService);
+    private annotationService = inject(AnnotationService);
+
+    protected currentSelection = signal<SelectionArea | null>(null);
 
     constructor() {
-        this.loadDocument();
+        console.log('DocumentViewerComponent создан, DocumentService:', !!this.documentService);
     }
 
-    private loadDocument() {
-        this.documentService.loadDocument().subscribe();
+    protected onSelectionChange(selection: SelectionArea) {
+        this.currentSelection.set(selection);
+    }
+
+    protected onSelectionEnd(selection: SelectionArea) {
+        this.currentSelection.set(null);
+        this.annotationService.createAnnotationFromSelection(selection);
+    }
+
+    protected updateAnnotationPosition(event: AnnotationPositionChangeEvent) {
+        this.state.updateAnnotationPosition(event.id, event.position);
+    }
+
+    protected updateAnnotationText(event: AnnotationTextChangeEvent) {
+        this.state.updateAnnotationText(event.id, event.text);
+    }
+
+    protected deleteAnnotation(id: string) {
+        this.state.deleteAnnotation(id);
+    }
+
+    protected onHighlightClick(id: string) {
+        this.annotationService.toggleAnnotationVisibility(id);
     }
 }

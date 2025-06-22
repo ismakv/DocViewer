@@ -1,1 +1,16 @@
-<div class="annotation"></div>
+<div
+    class="annotation"
+    [style.left.px]="annotation().position.x"
+    [style.top.px]="annotation().position.y"
+    (mousedown)="onMouseDown($event)">
+    <div class="annotation-content">
+        <textarea
+            [value]="annotation().text"
+            (input)="onTextChange($event)"
+            placeholder="Введите текст аннотации"
+            (mousedown)="onTextareaMouseDown($event)"
+            (click)="onTextareaClick($event)">
+        </textarea>
+        <button class="delete-btn" (click)="onDelete()" title="Удалить аннотацию">×</button>
+    </div>
+</div>
