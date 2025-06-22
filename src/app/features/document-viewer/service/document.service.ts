@@ -9,6 +9,10 @@ import { DOCUMENT_SOURCE } from '../providers/document-source.provider';
 export class DocumentService {
   private documentSource = inject(DOCUMENT_SOURCE);
 
+  loadDocument(): Observable<Document> {
+    return this.getDocument();
+  }
+
   getDocumentPages(): Observable<string[]> {
     return this.getDocument().pipe(map((document) => document?.pages.map((page) => page.imageUrl) ?? []));
   }
