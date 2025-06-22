@@ -11,17 +11,13 @@ import { DocumentStateService } from '@features/document-viewer/service/document
 })
 export class DocumentViewerComponent {
   private documentService = inject(DocumentService);
-  private documentStateService = inject(DocumentStateService);
+  public state = inject(DocumentStateService);
 
   constructor() {
     this.loadDocument();
   }
 
   private loadDocument() {
-    this.documentService.loadDocument().subscribe({
-      error: (error) => {
-        console.error('Error loading document:', error);
-      },
-    });
+    this.documentService.loadDocument().subscribe();
   }
 }

@@ -1,1 +1,9 @@
-<div class="document-container"></div>
+<div class="document-container">
+  <div class="pages">
+    @for (page of state.document()?.pages; track page.number) {
+      <div class="page">
+        <img [src]="page.imageUrl" [alt]="'Page ' + page.number" />
+      </div>
+    }
+  </div>
+</div>
