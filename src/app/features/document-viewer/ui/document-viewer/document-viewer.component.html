@@ -3,6 +3,7 @@
     @for (page of state.document()?.pages; track page.number) {
       <div class="page">
         <img [src]="page.imageUrl" [alt]="'Page ' + page.number" />
+        <app-annotation></app-annotation>
       </div>
     }
   </div>
