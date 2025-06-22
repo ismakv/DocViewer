@@ -5,22 +5,22 @@ import { DocumentStateService } from '@features/document-viewer/service/document
 import { AnnotationComponent } from '../annotation/annotation.component';
 
 @Component({
-  selector: 'app-document-viewer',
-  imports: [CommonModule, AnnotationComponent],
-  templateUrl: './document-viewer.component.html',
-  styleUrl: './document-viewer.component.less',
+    selector: 'app-document-viewer',
+    imports: [CommonModule, AnnotationComponent],
+    templateUrl: './document-viewer.component.html',
+    styleUrl: './document-viewer.component.less',
 })
 export class DocumentViewerComponent {
-  zoom = input.required<number>();
+    zoom = input.required<number>();
 
-  private documentService = inject(DocumentService);
-  public state = inject(DocumentStateService);
+    private documentService = inject(DocumentService);
+    public state = inject(DocumentStateService);
 
-  constructor() {
-    this.loadDocument();
-  }
+    constructor() {
+        this.loadDocument();
+    }
 
-  private loadDocument() {
-    this.documentService.loadDocument().subscribe();
-  }
+    private loadDocument() {
+        this.documentService.loadDocument().subscribe();
+    }
 }
