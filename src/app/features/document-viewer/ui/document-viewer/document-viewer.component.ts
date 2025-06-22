@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DocumentService } from '@features/document-viewer/service/document.service';
 import { DocumentStateService } from '@features/document-viewer/service/document-state.service';
@@ -10,6 +10,8 @@ import { DocumentStateService } from '@features/document-viewer/service/document
   styleUrl: './document-viewer.component.less',
 })
 export class DocumentViewerComponent {
+  zoom = input.required<number>();
+
   private documentService = inject(DocumentService);
   public state = inject(DocumentStateService);
 

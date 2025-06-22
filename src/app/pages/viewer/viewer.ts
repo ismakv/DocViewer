@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TuiButton, TuiTitle } from '@taiga-ui/core';
 import { TuiHeader } from '@taiga-ui/layout';
@@ -11,12 +11,14 @@ import { DocumentViewerComponent } from '../../features/document-viewer/ui/docum
   styleUrl: './viewer.less',
 })
 export class ViewerPage {
+  zoom = signal(1);
+
   zoomIn() {
-    console.log('Zoom in');
+    this.zoom.set(Math.min(this.zoom() + 0.1, 2));
   }
 
   zoomOut() {
-    console.log('Zoom out');
+    this.zoom.set(Math.max(this.zoom() - 0.1, 0.5));
   }
 
   saveAnnotations() {

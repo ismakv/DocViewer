@@ -1,5 +1,5 @@
 <div class="document-container">
-  <div class="pages">
+  <div class="pages" [style.transform]="'scale(' + zoom() + ')'">
     @for (page of state.document()?.pages; track page.number) {
       <div class="page">
         <img [src]="page.imageUrl" [alt]="'Page ' + page.number" />
