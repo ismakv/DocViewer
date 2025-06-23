@@ -1,4 +1,6 @@
-import { Directive, ElementRef, inject, input, output, OnDestroy } from '@angular/core';
+import { Directive, ElementRef, inject, input, output, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { fromEvent, switchMap, takeUntil, map, filter } from 'rxjs';
 
 export interface SelectionArea {
     x: number;
@@ -11,7 +13,7 @@ export interface SelectionArea {
 @Directive({
     selector: '[appAreaSelection]',
 })
-export class AreaSelectionDirective implements OnDestroy {
+export class AreaSelectionDirective {
     pageNumber = input.required<number>();
     disabled = input<boolean>(false);
 
@@ -20,87 +22,95 @@ export class AreaSelectionDirective implements OnDestroy {
     selectionEnd = output<SelectionArea>();
 
     private elementRef = inject(ElementRef);
-    private isSelecting = false;
-    private selectionStartPos = { x: 0, y: 0 };
-    private currentSelection = { x: 0, y: 0, width: 0, height: 0, pageNumber: 0 };
-    private currentMouseMoveHandler?: (e: MouseEvent) => void;
-    private currentMouseUpHandler?: () => void;
+    private destroyRef = inject(DestroyRef);
 
     constructor() {
-        this.elementRef.nativeElement.addEventListener('mousedown', this.onMouseDown.bind(this));
+        this.setupMouseSelection();
     }
 
-    private onMouseDown(event: MouseEvent): void {
-        if (this.disabled()) return;
+    private setupMouseSelection(): void {
+        const mouseDown$ = fromEvent<MouseEvent>(this.elementRef.nativeElement, 'mousedown');
+        const mouseMove$ = fromEvent<MouseEvent>(document, 'mousemove');
+        const mouseUp$ = fromEvent<MouseEvent>(document, 'mouseup');
 
-        event.preventDefault();
+        mouseDown$
+            .pipe(
+                // Фильтруем события если директива отключена
+                filter(() => !this.disabled()),
+                // Фильтруем клики на аннотациях и подсветках
+                filter((event) => {
+                    const target = event.target as HTMLElement;
+                    return !target.closest('.annotation') && !target.closest('.annotation-highlight');
+                }),
+                // Трансформируем событие mousedown в начальные координаты
+                map((event) => {
+                    event.preventDefault();
+                    const rect = this.elementRef.nativeElement.getBoundingClientRect();
+                    return {
+                        startX: event.clientX - rect.left,
+                        startY: event.clientY - rect.top,
+                        rect,
+                    };
+                }),
+                // Для каждого mousedown создаем поток mousemove до mouseup
+                switchMap(({ startX, startY, rect }) => {
+                    // Эмитим событие начала выделения
+                    this.selectionStart.emit({
+                        x: startX,
+                        y: startY,
+                        pageNumber: this.pageNumber(),
+                    });
 
-        // Проверяем, что клик не был на аннотации или подсветке
-        const target = event.target as HTMLElement;
-        if (target.closest('.annotation') || target.closest('.annotation-highlight')) {
-            return;
-        }
+                    // Создаем поток движения мыши до отпускания
+                    const dragStream$ = mouseMove$.pipe(
+                        // Прекращаем слушать mousemove при mouseup
+                        takeUntil(mouseUp$),
+                        // Трансформируем движения в области выделения
+                        map((moveEvent) => {
+                            const currentX = moveEvent.clientX - rect.left;
+                            const currentY = moveEvent.clientY - rect.top;
 
-        const rect = this.elementRef.nativeElement.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+                            const selection: SelectionArea = {
+                                x: Math.min(currentX, startX),
+                                y: Math.min(currentY, startY),
+                                width: Math.abs(currentX - startX),
+                                height: Math.abs(currentY - startY),
+                                pageNumber: this.pageNumber(),
+                            };
 
-        this.isSelecting = true;
-        this.selectionStartPos = { x, y };
-        this.currentSelection = { x, y, width: 0, height: 0, pageNumber: this.pageNumber() };
+                            // Эмитим изменение выделения
+                            this.selectionChange.emit(selection);
+                            return selection;
+                        }),
+                    );
 
-        this.selectionStart.emit({ x, y, pageNumber: this.pageNumber() });
+                    // Обрабатываем mouseup для эмита selectionEnd
+                    const endStream$ = mouseUp$.pipe(
+                        map((upEvent) => {
+                            const currentX = upEvent.clientX - rect.left;
+                            const currentY = upEvent.clientY - rect.top;
 
-        // Добавляем обработчики событий мыши
-        this.currentMouseMoveHandler = (e: MouseEvent): void => this.onMouseMove(e);
-        this.currentMouseUpHandler = (): void => this.onMouseUp();
+                            const finalSelection: SelectionArea = {
+                                x: Math.min(currentX, startX),
+                                y: Math.min(currentY, startY),
+                                width: Math.abs(currentX - startX),
+                                height: Math.abs(currentY - startY),
+                                pageNumber: this.pageNumber(),
+                            };
 
-        document.addEventListener('mousemove', this.currentMouseMoveHandler);
-        document.addEventListener('mouseup', this.currentMouseUpHandler);
-    }
+                            // Эмитим конец выделения с финальной областью
+                            this.selectionEnd.emit(finalSelection);
+                            return finalSelection;
+                        }),
+                    );
 
-    private onMouseMove(event: MouseEvent): void {
-        if (!this.isSelecting) return;
-
-        const rect = this.elementRef.nativeElement.getBoundingClientRect();
-        const currentX = event.clientX - rect.left;
-        const currentY = event.clientY - rect.top;
-
-        // Обновляем размеры выделения
-        this.currentSelection.width = Math.abs(currentX - this.selectionStartPos.x);
-        this.currentSelection.height = Math.abs(currentY - this.selectionStartPos.y);
-        this.currentSelection.x = Math.min(currentX, this.selectionStartPos.x);
-        this.currentSelection.y = Math.min(currentY, this.selectionStartPos.y);
-
-        this.selectionChange.emit({ ...this.currentSelection });
-    }
-
-    private onMouseUp(): void {
-        if (!this.isSelecting) return;
-
-        this.isSelecting = false;
-
-        // Удаляем обработчики событий
-        this.removeEventListeners();
-
-        this.selectionEnd.emit({ ...this.currentSelection });
-
-        // Сбрасываем выделение
-        this.currentSelection = { x: 0, y: 0, width: 0, height: 0, pageNumber: 0 };
-    }
-
-    private removeEventListeners(): void {
-        if (this.currentMouseMoveHandler) {
-            document.removeEventListener('mousemove', this.currentMouseMoveHandler);
-            this.currentMouseMoveHandler = undefined;
-        }
-        if (this.currentMouseUpHandler) {
-            document.removeEventListener('mouseup', this.currentMouseUpHandler);
-            this.currentMouseUpHandler = undefined;
-        }
-    }
-
-    ngOnDestroy(): void {
-        this.removeEventListeners();
+                    return dragStream$.pipe(
+                        // Добавляем финальное событие selectionEnd
+                        takeUntil(endStream$),
+                    );
+                }),
+                takeUntilDestroyed(this.destroyRef),
+            )
+            .subscribe();
     }
 }
