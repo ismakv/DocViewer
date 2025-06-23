@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DocumentStateService } from '../../service/document-state.service';
 import { AnnotationService } from '../../service/annotation.service';
@@ -13,6 +13,7 @@ import { AnnotationPositionChangeEvent, AnnotationTextChangeEvent } from '../../
     imports: [CommonModule, AnnotationComponent, AreaSelectionDirective],
     templateUrl: './document-page.component.html',
     styleUrl: './document-page.component.less',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DocumentPageComponent {
     page = input.required<Page>();

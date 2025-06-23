@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Annotation } from '@entities/model/annotation.interface';
 
@@ -7,6 +7,7 @@ import { Annotation } from '@entities/model/annotation.interface';
     imports: [CommonModule],
     templateUrl: './annotation.component.html',
     styleUrl: './annotation.component.less',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnnotationComponent {
     annotation = input.required<Annotation>();

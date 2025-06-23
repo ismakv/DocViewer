@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TuiButton, TuiTitle } from '@taiga-ui/core';
 import { TuiHeader } from '@taiga-ui/layout';
@@ -10,6 +10,7 @@ import { DocumentStateService } from '../../features/document-viewer/service/doc
     imports: [CommonModule, TuiButton, TuiHeader, TuiTitle, DocumentViewerComponent],
     templateUrl: './viewer.html',
     styleUrl: './viewer.less',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ViewerPage {
     zoom = signal(1);

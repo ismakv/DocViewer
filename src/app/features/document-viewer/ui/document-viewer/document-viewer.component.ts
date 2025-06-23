@@ -1,4 +1,4 @@
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, inject, input, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DocumentPageComponent } from '../document-page/document-page.component';
 import { DocumentService } from '../../service/document.service';
@@ -12,6 +12,7 @@ import { AnnotationPositionChangeEvent, AnnotationTextChangeEvent } from '../../
     imports: [CommonModule, DocumentPageComponent],
     templateUrl: './document-viewer.component.html',
     styleUrl: './document-viewer.component.less',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DocumentViewerComponent {
     zoom = input.required<number>();
