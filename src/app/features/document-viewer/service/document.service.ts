@@ -14,7 +14,6 @@ export class DocumentService {
     private destroyRef = inject(DestroyRef);
 
     constructor() {
-        console.log('DocumentService инициализирован');
         this.loadDocument();
     }
 
@@ -23,7 +22,6 @@ export class DocumentService {
             .getDocument()
             .pipe(
                 tap((document) => {
-                    console.log('Документ успешно загружен:', document);
                     this.state.setDocument(document);
                 }),
                 catchError((error) => {

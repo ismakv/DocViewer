@@ -13,10 +13,8 @@ export class JsonDocumentSourceService implements DocumentSource {
     private documentPath = inject(DOCUMENT_PATH);
 
     getDocument(): Observable<Document> {
-        console.log('Загружаем документ из:', this.documentPath);
         return this.http.get<Document>(this.documentPath).pipe(
             tap({
-                next: (document) => console.log('Документ успешно загружен:', document),
                 error: (error) => console.error('Ошибка загрузки документа:', error),
             }),
         );

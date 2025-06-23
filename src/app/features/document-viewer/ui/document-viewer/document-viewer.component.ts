@@ -23,10 +23,6 @@ export class DocumentViewerComponent {
 
     protected currentSelection = signal<SelectionArea | null>(null);
 
-    constructor() {
-        console.log('DocumentViewerComponent создан, DocumentService:', !!this.documentService);
-    }
-
     protected onSelectionChange(selection: SelectionArea): void {
         this.currentSelection.set(selection);
     }
