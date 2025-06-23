@@ -1,5 +1,16 @@
-import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
+import {
+    Component,
+    input,
+    output,
+    ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
+    ElementRef,
+    AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { fromEvent, switchMap, takeUntil, map, filter } from 'rxjs';
 import { Annotation } from '@entities/model/annotation.interface';
 
 @Component({
@@ -9,46 +20,61 @@ import { Annotation } from '@entities/model/annotation.interface';
     styleUrl: './annotation.component.less',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AnnotationComponent {
+export class AnnotationComponent implements AfterViewInit {
     annotation = input.required<Annotation>();
     positionChange = output<{ id: string; position: { x: number; y: number } }>();
     textChange = output<{ id: string; text: string }>();
     delete = output<void>();
 
-    private isDragging = false;
-    private startX = 0;
-    private startY = 0;
+    private destroyRef = inject(DestroyRef);
+    private elementRef = inject(ElementRef);
 
-    onMouseDown(event: MouseEvent): void {
-        if ((event.target as HTMLElement).tagName === 'TEXTAREA') {
-            return;
-        }
+    ngAfterViewInit(): void {
+        this.setupDragAndDrop();
+    }
 
-        event.preventDefault();
-        this.isDragging = true;
-        this.startX = event.clientX - this.annotation().position.x;
-        this.startY = event.clientY - this.annotation().position.y;
+    private setupDragAndDrop(): void {
+        const mouseDown$ = fromEvent<MouseEvent>(this.elementRef.nativeElement, 'mousedown');
+        const mouseMove$ = fromEvent<MouseEvent>(document, 'mousemove');
+        const mouseUp$ = fromEvent<MouseEvent>(document, 'mouseup');
 
-        const mouseMoveHandler = (e: MouseEvent): void => {
-            if (this.isDragging) {
-                const newX = e.clientX - this.startX;
-                const newY = e.clientY - this.startY;
+        mouseDown$
+            .pipe(
+                // Игнорируем клики на textarea и кнопках
+                filter((event) => {
+                    const target = event.target as HTMLElement;
+                    return target.tagName !== 'TEXTAREA' && target.tagName !== 'BUTTON';
+                }),
+                // Трансформируем mousedown в стартовые координаты
+                map((event) => {
+                    event.preventDefault();
+                    return {
+                        startX: event.clientX - this.annotation().position.x,
+                        startY: event.clientY - this.annotation().position.y,
+                    };
+                }),
+                // Для каждого mousedown создаем поток mousemove до mouseup
+                switchMap(({ startX, startY }) => {
+                    return mouseMove$.pipe(
+                        // Прекращаем слушать mousemove при mouseup
+                        takeUntil(mouseUp$),
+                        // Трансформируем движения в новые позиции
+                        map((moveEvent) => {
+                            const newX = moveEvent.clientX - startX;
+                            const newY = moveEvent.clientY - startY;
 
-                this.positionChange.emit({
-                    id: this.annotation().id,
-                    position: { x: newX, y: newY },
-                });
-            }
-        };
-
-        const mouseUpHandler = (): void => {
-            this.isDragging = false;
-            document.removeEventListener('mousemove', mouseMoveHandler);
-            document.removeEventListener('mouseup', mouseUpHandler);
-        };
-
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
+                            return {
+                                id: this.annotation().id,
+                                position: { x: newX, y: newY },
+                            };
+                        }),
+                    );
+                }),
+                takeUntilDestroyed(this.destroyRef),
+            )
+            .subscribe((positionData) => {
+                this.positionChange.emit(positionData);
+            });
     }
 
     onTextareaMouseDown(event: MouseEvent): void {
