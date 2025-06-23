@@ -1,6 +1,7 @@
-import { Injectable, inject, effect } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { shareReplay } from 'rxjs';
+import { Injectable, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { shareReplay, catchError, tap } from 'rxjs';
+import { EMPTY } from 'rxjs';
 import { DOCUMENT_SOURCE } from '../providers/document-source.provider';
 import { DocumentStateService } from './document-state.service';
 
@@ -10,40 +11,29 @@ import { DocumentStateService } from './document-state.service';
 export class DocumentService {
     private documentSource = inject(DOCUMENT_SOURCE);
     private state = inject(DocumentStateService);
-
-    // Автоматически загружаем и обрабатываем документ через сигналы
-    private documentLoaded = toSignal(
-        this.documentSource.getDocument().pipe(
-            shareReplay(1), // Делаем observable hot и кешируем результат
-        ),
-        { initialValue: null },
-    );
+    private destroyRef = inject(DestroyRef);
 
     constructor() {
         console.log('DocumentService инициализирован');
+        this.loadDocument();
+    }
 
-        // Автоматически сохраняем документ в state при загрузке
-        effect(() => {
-            const document = this.documentLoaded();
-            console.log('Документ загружен:', document);
-            if (document) {
-                this.state.setDocument(document);
-                console.log('Документ сохранен в state');
-            }
-        });
-
-        // Fallback: если toSignal не работает, используем старый подход
-        setTimeout(() => {
-            if (!this.state.document()) {
-                console.log('Fallback: загружаем документ через subscribe');
-                this.documentSource.getDocument().subscribe({
-                    next: (document) => {
-                        console.log('Fallback: документ загружен');
-                        this.state.setDocument(document);
-                    },
-                    error: (error) => console.error('Fallback: ошибка загрузки', error),
-                });
-            }
-        }, 1000);
+    private loadDocument(): void {
+        this.documentSource
+            .getDocument()
+            .pipe(
+                //retry({ count: 3, delay: 1000 }), // Повторяем 3 раза с задержкой 1 сек
+                tap((document) => {
+                    console.log('Документ успешно загружен:', document);
+                    this.state.setDocument(document);
+                }),
+                catchError((error) => {
+                    console.error('Ошибка загрузки документа после всех попыток:', error);
+                    return EMPTY;
+                }),
+                shareReplay(1),
+                takeUntilDestroyed(this.destroyRef),
+            )
+            .subscribe();
     }
 }
