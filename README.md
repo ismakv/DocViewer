@@ -1,6 +1,7 @@
 # DocViewer
 
-https://doc-viewer-gilt.vercel.app/document/1
+Демо - https://doc-viewer-gilt.vercel.app/document/1
+
 Приложение для просмотра документов с возможностью создания и редактирования аннотаций.
 
 
