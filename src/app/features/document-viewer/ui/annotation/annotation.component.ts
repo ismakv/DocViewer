@@ -19,7 +19,7 @@ export class AnnotationComponent {
     private startX = 0;
     private startY = 0;
 
-    onMouseDown(event: MouseEvent) {
+    onMouseDown(event: MouseEvent): void {
         if ((event.target as HTMLElement).tagName === 'TEXTAREA') {
             return;
         }
@@ -29,7 +29,7 @@ export class AnnotationComponent {
         this.startX = event.clientX - this.annotation().position.x;
         this.startY = event.clientY - this.annotation().position.y;
 
-        const mouseMoveHandler = (e: MouseEvent) => {
+        const mouseMoveHandler = (e: MouseEvent): void => {
             if (this.isDragging) {
                 const newX = e.clientX - this.startX;
                 const newY = e.clientY - this.startY;
@@ -41,7 +41,7 @@ export class AnnotationComponent {
             }
         };
 
-        const mouseUpHandler = () => {
+        const mouseUpHandler = (): void => {
             this.isDragging = false;
             document.removeEventListener('mousemove', mouseMoveHandler);
             document.removeEventListener('mouseup', mouseUpHandler);
@@ -51,15 +51,15 @@ export class AnnotationComponent {
         document.addEventListener('mouseup', mouseUpHandler);
     }
 
-    onTextareaMouseDown(event: MouseEvent) {
+    onTextareaMouseDown(event: MouseEvent): void {
         event.stopPropagation();
     }
 
-    onTextareaClick(event: MouseEvent) {
+    onTextareaClick(event: MouseEvent): void {
         event.stopPropagation();
     }
 
-    onTextChange(event: Event) {
+    onTextChange(event: Event): void {
         const target = event.target as HTMLTextAreaElement;
         this.textChange.emit({
             id: this.annotation().id,
@@ -67,7 +67,7 @@ export class AnnotationComponent {
         });
     }
 
-    onDelete() {
+    onDelete(): void {
         this.delete.emit();
     }
 }

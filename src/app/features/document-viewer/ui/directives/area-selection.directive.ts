@@ -30,7 +30,7 @@ export class AreaSelectionDirective implements OnDestroy {
         this.elementRef.nativeElement.addEventListener('mousedown', this.onMouseDown.bind(this));
     }
 
-    private onMouseDown(event: MouseEvent) {
+    private onMouseDown(event: MouseEvent): void {
         if (this.disabled()) return;
 
         event.preventDefault();
@@ -52,14 +52,14 @@ export class AreaSelectionDirective implements OnDestroy {
         this.selectionStart.emit({ x, y, pageNumber: this.pageNumber() });
 
         // Добавляем обработчики событий мыши
-        this.currentMouseMoveHandler = (e: MouseEvent) => this.onMouseMove(e);
-        this.currentMouseUpHandler = () => this.onMouseUp();
+        this.currentMouseMoveHandler = (e: MouseEvent): void => this.onMouseMove(e);
+        this.currentMouseUpHandler = (): void => this.onMouseUp();
 
         document.addEventListener('mousemove', this.currentMouseMoveHandler);
         document.addEventListener('mouseup', this.currentMouseUpHandler);
     }
 
-    private onMouseMove(event: MouseEvent) {
+    private onMouseMove(event: MouseEvent): void {
         if (!this.isSelecting) return;
 
         const rect = this.elementRef.nativeElement.getBoundingClientRect();
@@ -75,7 +75,7 @@ export class AreaSelectionDirective implements OnDestroy {
         this.selectionChange.emit({ ...this.currentSelection });
     }
 
-    private onMouseUp() {
+    private onMouseUp(): void {
         if (!this.isSelecting) return;
 
         this.isSelecting = false;
@@ -89,7 +89,7 @@ export class AreaSelectionDirective implements OnDestroy {
         this.currentSelection = { x: 0, y: 0, width: 0, height: 0, pageNumber: 0 };
     }
 
-    private removeEventListeners() {
+    private removeEventListeners(): void {
         if (this.currentMouseMoveHandler) {
             document.removeEventListener('mousemove', this.currentMouseMoveHandler);
             this.currentMouseMoveHandler = undefined;
@@ -100,7 +100,7 @@ export class AreaSelectionDirective implements OnDestroy {
         }
     }
 
-    ngOnDestroy() {
+    ngOnDestroy(): void {
         this.removeEventListeners();
     }
 }

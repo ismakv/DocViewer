@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, input, output, ChangeDetectionStrategy, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DocumentStateService } from '../../service/document-state.service';
 import { AnnotationService } from '../../service/annotation.service';
@@ -33,7 +33,7 @@ export class DocumentPageComponent {
     protected hasUnsavedAnnotation = this.annotationService.hasUnsavedAnnotation.bind(this.annotationService);
 
     // Метод для шаблона
-    protected isAnnotationVisible(id: string) {
+    protected isAnnotationVisible(id: string): Signal<boolean> {
         return this.state.isAnnotationVisible(id);
     }
 
@@ -52,15 +52,15 @@ export class DocumentPageComponent {
             })),
     );
 
-    protected onSelectionChange(selection: SelectionArea) {
+    protected onSelectionChange(selection: SelectionArea): void {
         this.selectionChange.emit(selection);
     }
 
-    protected onSelectionEnd(selection: SelectionArea) {
+    protected onSelectionEnd(selection: SelectionArea): void {
         this.selectionEnd.emit(selection);
     }
 
-    protected getHighlightStyles(highlight: HighlightData) {
+    protected getHighlightStyles(highlight: HighlightData): Record<string, string> {
         const { x, y, width, height } = highlight.selectionArea;
         return {
             left: x + 'px',
@@ -70,7 +70,7 @@ export class DocumentPageComponent {
         };
     }
 
-    protected getSelectionStyles() {
+    protected getSelectionStyles(): Record<string, string> {
         const selection = this.currentSelection();
         if (!selection) return {};
 
@@ -83,7 +83,7 @@ export class DocumentPageComponent {
         };
     }
 
-    protected onHighlightInteraction(event: Event, highlightId: string) {
+    protected onHighlightInteraction(event: Event, highlightId: string): void {
         if (event.type === 'click' || (event.type === 'keydown' && (event as KeyboardEvent).key === 'Enter')) {
             this.highlightClick.emit(highlightId);
         }

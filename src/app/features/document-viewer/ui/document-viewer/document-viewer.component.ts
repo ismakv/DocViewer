@@ -27,28 +27,28 @@ export class DocumentViewerComponent {
         console.log('DocumentViewerComponent создан, DocumentService:', !!this.documentService);
     }
 
-    protected onSelectionChange(selection: SelectionArea) {
+    protected onSelectionChange(selection: SelectionArea): void {
         this.currentSelection.set(selection);
     }
 
-    protected onSelectionEnd(selection: SelectionArea) {
+    protected onSelectionEnd(selection: SelectionArea): void {
         this.currentSelection.set(null);
         this.annotationService.createAnnotationFromSelection(selection);
     }
 
-    protected updateAnnotationPosition(event: AnnotationPositionChangeEvent) {
+    protected updateAnnotationPosition(event: AnnotationPositionChangeEvent): void {
         this.state.updateAnnotationPosition(event.id, event.position);
     }
 
-    protected updateAnnotationText(event: AnnotationTextChangeEvent) {
+    protected updateAnnotationText(event: AnnotationTextChangeEvent): void {
         this.state.updateAnnotationText(event.id, event.text);
     }
 
-    protected deleteAnnotation(id: string) {
+    protected deleteAnnotation(id: string): void {
         this.state.deleteAnnotation(id);
     }
 
-    protected onHighlightClick(id: string) {
+    protected onHighlightClick(id: string): void {
         this.annotationService.toggleAnnotationVisibility(id);
     }
 }

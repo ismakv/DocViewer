@@ -16,15 +16,15 @@ export class ViewerPage {
     zoom = signal(1);
     private stateService = inject(DocumentStateService);
 
-    zoomIn() {
+    zoomIn(): void {
         this.zoom.set(Math.min(this.zoom() + 0.1, 2));
     }
 
-    zoomOut() {
+    zoomOut(): void {
         this.zoom.set(Math.max(this.zoom() - 0.1, 0.5));
     }
 
-    saveAnnotations() {
+    saveAnnotations(): void {
         this.stateService.markAnnotationsAsSaved();
 
         const document = this.stateService.document();
