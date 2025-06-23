@@ -22,7 +22,6 @@ export class DocumentService {
         this.documentSource
             .getDocument()
             .pipe(
-                //retry({ count: 3, delay: 1000 }), // Повторяем 3 раза с задержкой 1 сек
                 tap((document) => {
                     console.log('Документ успешно загружен:', document);
                     this.state.setDocument(document);
