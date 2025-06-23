@@ -11,6 +11,8 @@ import { AreaSelectionDirective } from './area-selection.directive';
             (selectionEnd)="onSelectionEnd($event)"
             style="width: 400px; height: 300px; position: relative;"></div>
     `,
+    standalone: true,
+    imports: [AreaSelectionDirective],
 })
 class TestHostComponent {
     pageNumber = signal(1);
@@ -25,8 +27,7 @@ describe('AreaSelectionDirective - Critical Tests', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [AreaSelectionDirective],
-            declarations: [TestHostComponent],
+            imports: [TestHostComponent],
         }).compileComponents();
 
         fixture = TestBed.createComponent(TestHostComponent);
@@ -62,6 +63,8 @@ describe('AreaSelectionDirective - Critical Tests', () => {
         document.dispatchEvent(mouseMoveEvent);
 
         const mouseUpEvent = new MouseEvent('mouseup', {
+            clientX: 200,
+            clientY: 250,
             bubbles: true,
         });
 
@@ -89,6 +92,8 @@ describe('AreaSelectionDirective - Critical Tests', () => {
         directiveEl.dispatchEvent(mouseDownEvent);
 
         const mouseUpEvent = new MouseEvent('mouseup', {
+            clientX: 150,
+            clientY: 200,
             bubbles: true,
         });
 
